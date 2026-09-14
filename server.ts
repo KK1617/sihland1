@@ -1,5 +1,7 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
+import os from 'os';
 import { execFile } from 'child_process';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
@@ -50,7 +52,7 @@ async function startServer() {
 
   // Download complete project source code as a ZIP
   app.get('/api/download-zip', (_req, res) => {
-    const zipPath = path.join('/tmp', 'geoai-studio.zip');
+    const zipPath = path.join(os.tmpdir(), 'geoai-studio.zip');
     execFile('python3', ['export_zip.py', '.', zipPath], (error) => {
       if (error) {
         console.error('Failed to create zip:', error);
@@ -144,14 +146,17 @@ Current context:
   });
 
   // Vite middleware for development vs static serve for production
-  if (process.env.NODE_ENV !== 'production') {
+  const isProduction = process.env.NODE_ENV === 'production' || (typeof __filename !== 'undefined' && __filename.endsWith('.cjs'));
+  if (!isProduction) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    const distPath = fs.existsSync(path.join(process.cwd(), 'dist', 'index.html'))
+      ? path.join(process.cwd(), 'dist')
+      : path.resolve(__dirname);
     app.use(express.static(distPath));
     app.get('*', (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
