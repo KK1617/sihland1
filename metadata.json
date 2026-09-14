@@ -1,0 +1,6 @@
+{
+  "name": "GeoAI Studio",
+  "description": "Interactive Geospatial AI workbench for satellite imagery analysis, foundation models (Prithvi, SAM, RF-DETR), land cover segmentation, and automated code generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
